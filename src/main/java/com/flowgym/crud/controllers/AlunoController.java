@@ -26,7 +26,6 @@ import com.flowgym.crud.dtos.AlunoLoginDto;
 import com.flowgym.crud.model.AlunoLoginModel;
 import com.flowgym.crud.model.AlunoModel;
 import com.flowgym.crud.repositories.AlunoRepository;
-import com.flowgym.crud.repositories.AlunoRepository;
 import com.flowgym.crud.repositories.LoginRepository;
 
 import jakarta.validation.Valid;
@@ -104,9 +103,7 @@ public class AlunoController {
 
     //Obtem informações do usuario pelo cpf
     @GetMapping("/recepcionista/cpf/{cpf}") // Recepcionista e aluno
-    public ResponseEntity getByCpf(
-    @PathVariable(value = "cpf") String cpf, 
-    @AuthenticationPrincipal UserDetails principal) {
+    public ResponseEntity getByCpf(@PathVariable(value = "cpf") String cpf, @AuthenticationPrincipal UserDetails principal) {
 
     // Verifica se o aluno existe no banco de dados
     Optional<AlunoModel> aluno = aRepository.findByCpf(cpf);
@@ -117,7 +114,7 @@ public class AlunoController {
     AlunoModel alunoModel = aluno.get();
 
     // Autenticação e autorização
-    String username = principal.getUsername(); // Usuário logado (pode ser matrícula ou CPF)
+    String username = principal.getUsername(); // Usuário logado 
     String matricula = alunoModel.getMatricula(); // Matrícula do aluno
 
     // Verifica se o usuário é o dono do CPF ou possui papel de ADMIN/RECEPCIONISTA

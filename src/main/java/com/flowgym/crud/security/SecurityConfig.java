@@ -20,7 +20,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth // Isso configura as permissões de acesso para os endpoints.
-                .requestMatchers(
+            .requestMatchers(
                 "/aluno/recepcionista/**",
                 "/aluno", 
                 "/recepcionista/recepcionista/usuariocadastro", 
@@ -29,18 +29,18 @@ public class SecurityConfig {
                 "/instrutor/recepcionista/cpf/{cpf}",
                 "/instrutor/recepcionista/cadastro",
                 "/instrutor/recepcionista/usuariocadastro",
-                "/instrutor/recepcionista/atualizar/cpf/{cpf}").hasRole("RECEPCIONISTA")
+                "/instrutor/recepcionista/atualizar/cpf/{cpf}").hasAnyRole("RECEPCIONISTA", "ADMIN")
                 .requestMatchers(
                 "/fichas/imprimir/{matricula}", 
                 "/aluno/recepcionista/cpf/{cpf}", 
                 "/aluno/recepcionista/usuariocadastro", 
-                "/fichas/aluno/exercicios/{matricula}").hasRole("ALUNO")
+                "/fichas/aluno/exercicios/{matricula}").hasAnyRole("ALUNO", "ADMIN")
                 .requestMatchers(
                 "/aluno",
                 "/fichas/instrutor/**", 
                 "/instrutor/recepcionista/cpf/{cpf}",
-                "/instrutor/recepcionista/usuariocadastro").hasRole("INSTRUTOR")
-                .requestMatchers("/**").hasRole("ADMIN") // Permite ADMIN acessar todos os endpoint
+                "/instrutor/recepcionista/usuariocadastro").hasAnyRole("INSTRUTOR", "ADMIN")
+                .anyRequest().hasRole("ADMIN") // Permite ADMIN acessar todos os endpoint    
                 .anyRequest().authenticated() //Todos os outros endpoints precisam de autenticação
             )
             .formLogin(form -> form.permitAll()) //Permite que qualquer um acesse a tela de login
@@ -61,5 +61,7 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(); // Esse codificador gera um hash criptografado da senha usando um algoritmo avançado
     }
+
+    
 }
 
