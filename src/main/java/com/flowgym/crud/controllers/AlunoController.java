@@ -1,5 +1,6 @@
 package com.flowgym.crud.controllers;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -72,6 +73,7 @@ public class AlunoController {
         AlunoDto alunoDto = new AlunoDto(
             alunoModel.getNome(),
             alunoModel.getNascimento(),
+            alunoModel.getDataVencimento(),
             alunoModel.getEmail(),
             alunoModel.getTelefone(),
             alunoModel.getCpf(),
@@ -126,6 +128,7 @@ public class AlunoController {
     AlunoDto alunoDto = new AlunoDto(
         alunoModel.getNome(),
         alunoModel.getNascimento(),
+        alunoModel.getDataVencimento(),
         alunoModel.getEmail(),
         alunoModel.getTelefone(),
         alunoModel.getCpf(),
@@ -140,6 +143,24 @@ public class AlunoController {
 // Método auxiliar para verificar se o usuário tem o papel especificado
 private boolean hasRole(String role, UserDetails principal) {
     return principal.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role));
+}
+
+    //Metodo pra verificar se a mensalidade do aluno está vencida
+    @GetMapping("/recepcionista/verificarVencimento/{cpf}") // admin ou recepcionista
+    public ResponseEntity verificarVencimento(@PathVariable(value = "cpf") String cpf) {
+    Optional<AlunoModel> aluno = aRepository.findByCpf(cpf);
+    if (aluno.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aluno não encontrado");
+    }
+
+    LocalDate dataVencimento = aluno.get().getDataVencimento();
+    LocalDate hoje = LocalDate.now(); //Pega a data de hoje
+
+    if (dataVencimento.isBefore(hoje)) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("O prazo de pagamento já venceu.");
+    }
+
+    return ResponseEntity.status(HttpStatus.OK).body("O prazo de pagamento está em aberto.");
 }
 
 
@@ -165,6 +186,10 @@ private boolean hasRole(String role, UserDetails principal) {
     var aluno = new AlunoModel(); 
     BeanUtils.copyProperties(dto, aluno); // Copia as propriedades do DTO para o aluno
     aluno.setMatricula(gerarMatricula());
+
+    // Define a data de vencimento para 30 dias após a criação do aluno
+    aluno.setDataVencimento(LocalDate.now().plusDays(30));
+
     // Se o aluno for menor, associa o CPF do responsável
     if (dto.menor() && dto.responsavelCpf() != null && !dto.responsavelCpf().isEmpty()) {
         // Aqui, associamos o CPF do responsável ao campo 'responsavelCpf' no aluno
@@ -236,6 +261,12 @@ private boolean hasRole(String role, UserDetails principal) {
     if (dto.telefone() != null) {
         alunoModel.setTelefone(dto.telefone());
     }
+    if(dto.dataVencimento() != null){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Data de vencimento não deve ser alterada");
+    }
+    if (dto.nascimento() != null){
+        alunoModel.setNascimento(dto.nascimento());
+    }
  
     var responsavel = dto.responsavelCpf();
     // Verifica o campo "menor" e define o responsável
@@ -264,6 +295,9 @@ private boolean hasRole(String role, UserDetails principal) {
     if (dto.nome() != null) {
         alunoModel.setNome(dto.nome());
     }
+    if (dto.nascimento() != null){
+        alunoModel.setNascimento(dto.nascimento());
+    }
     if (dto.email() != null) {
         alunoModel.setEmail(dto.email());
     }
@@ -273,6 +307,10 @@ private boolean hasRole(String role, UserDetails principal) {
     if (dto.telefone() != null) {
         alunoModel.setTelefone(dto.telefone());
     }
+    if(dto.dataVencimento() != null){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Data de vencimento não deve ser alterada");
+    }
+
     var responsavel = dto.responsavelCpf();
     if (!dto.menor()) {
         alunoModel.setResponsavelCpf(null);
@@ -282,6 +320,25 @@ private boolean hasRole(String role, UserDetails principal) {
     }
     return ResponseEntity.status(HttpStatus.OK).body(aRepository.save(alunoModel));
 }
+
+    //Metodo referente ao pagamento da mensalidade
+    @PutMapping("/recepcionista/zerarVencimento/{cpf}") // admin ou recepcionista
+    public ResponseEntity zerarVencimento(@PathVariable(value = "cpf") String cpf) {
+    Optional<AlunoModel> aluno = aRepository.findByCpf(cpf);
+    if (aluno.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aluno não encontrado");
+    }
+
+    AlunoModel alunoModel = aluno.get();
+
+    // Atualiza a data de vencimento para 30 dias após a data atual
+    alunoModel.setDataVencimento(LocalDate.now().plusDays(30)); //Acresta mais 30 dias
+
+    aRepository.save(alunoModel); // Salva o aluno com a nova data de vencimento
+
+    return ResponseEntity.status(HttpStatus.OK).body("Timer de vencimento zerado.");
+}
+
 
     @DeleteMapping("/apagar/{id}") //admin
     public ResponseEntity delete(@PathVariable(value = "id") Integer id){

@@ -21,6 +21,9 @@ public record AlunoDto( //Dto é uma classe que a gente instância o que a gente
     @JsonFormat(pattern = "dd-MM-yyyy")
     LocalDate nascimento,
 
+    @JsonFormat(pattern = "dd-MM-yyyy")
+    LocalDate dataVencimento,
+
     @Email(message = "Email inválido")
     String email,
 

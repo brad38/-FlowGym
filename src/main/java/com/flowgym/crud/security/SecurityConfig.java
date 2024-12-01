@@ -30,7 +30,9 @@ public class SecurityConfig {
                 "/instrutor/recepcionista/cpf/{cpf}",
                 "/instrutor/recepcionista/cadastro",
                 "/instrutor/recepcionista/usuariocadastro",
-                "/instrutor/recepcionista/atualizar/cpf/{cpf}").hasAnyRole("RECEPCIONISTA", "ADMIN")
+                "/instrutor/recepcionista/atualizar/cpf/{cpf}",
+                "/aluno/recepcionista/verificarVencimento/{cpf}",
+                "/aluno//recepcionista/zerarVencimento/{cpf}").hasAnyRole("RECEPCIONISTA", "ADMIN")
                 .requestMatchers(
                 "/fichas/imprimir/{matricula}", 
                 "/aluno/recepcionista/cpf/{cpf}", 

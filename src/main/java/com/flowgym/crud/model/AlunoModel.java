@@ -40,4 +40,5 @@ public class AlunoModel {
 
     private String responsavelCpf; // CPF do responsável, sem chave estrangeira
 
+    private LocalDate dataVencimento;
 }
