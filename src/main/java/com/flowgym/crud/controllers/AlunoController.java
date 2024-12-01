@@ -139,9 +139,7 @@ public class AlunoController {
 
 // Método auxiliar para verificar se o usuário tem o papel especificado
 private boolean hasRole(String role, UserDetails principal) {
-    return principal.getAuthorities()
-                    .stream()
-                    .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role));
+    return principal.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role));
 }
 
 
@@ -180,7 +178,6 @@ private boolean hasRole(String role, UserDetails principal) {
     // Salva o aluno no banco de dados
     return ResponseEntity.status(HttpStatus.CREATED).body(aRepository.save(aluno));
 }
- 
     //Metodo responsável por o usuario cadastrar a própria senha
    @PostMapping("/recepcionista/usuariocadastro") //recepcionista e aluno
     public ResponseEntity cadastrarSenha(@RequestBody AlunoLoginDto loginDto) {
@@ -239,14 +236,17 @@ private boolean hasRole(String role, UserDetails principal) {
     if (dto.telefone() != null) {
         alunoModel.setTelefone(dto.telefone());
     }
-    //Tirar aninhado de ifs
+ 
     var responsavel = dto.responsavelCpf();
     // Verifica o campo "menor" e define o responsável
-    if (!dto.menor()) {
+    if (!dto.menor() && dto.cpf() != null) {
         alunoModel.setResponsavelCpf(null);
     }
     if (dto.menor() && responsavel == null) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("CPF do responsável não pode ser nulo ou vazio.");
+    }
+    if (!dto.menor() && dto.cpf() == null){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("CPF não pode está vazio");
     }
 
     // Salva as alterações

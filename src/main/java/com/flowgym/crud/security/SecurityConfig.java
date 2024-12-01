@@ -1,6 +1,7 @@
 package com.flowgym.crud.security;
 
 import javax.sql.DataSource;
+import javax.swing.JOptionPane;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,8 +41,7 @@ public class SecurityConfig {
                 "/fichas/instrutor/**", 
                 "/instrutor/recepcionista/cpf/{cpf}",
                 "/instrutor/recepcionista/usuariocadastro").hasAnyRole("INSTRUTOR", "ADMIN")
-                .anyRequest().hasRole("ADMIN") // Permite ADMIN acessar todos os endpoint    
-                .anyRequest().authenticated() //Todos os outros endpoints precisam de autenticação
+                .anyRequest().hasRole("ADMIN") // Permite ADMIN acessar todos os endpoint que não estão mapeados a outros papeis
             )
             .formLogin(form -> form.permitAll()) //Permite que qualquer um acesse a tela de login
             .httpBasic(Customizer.withDefaults()); //Ativa a autenticação HTTP Basic (nome de usuário e senha no cabeçalho da requisição)
@@ -62,6 +62,14 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder(); // Esse codificador gera um hash criptografado da senha usando um algoritmo avançado
     }
 
-    
+    //Contexto estático pra criptografar uma senha
+    public static void main(String[] args){
+        PasswordEncoder encoder = new BCryptPasswordEncoder();
+        String Senha =  JOptionPane.showInputDialog(null, "Digite a senha a ser criptografada do admin");
+        String senhaCriptografada = encoder.encode(Senha);
+        JOptionPane.showInputDialog(null, "Tua senha:",senhaCriptografada);
+        // JOptionPane.showMessageDialog(null, "Dê uma olhada na saída do terminal");
+        System.out.println("\nSenha criptograda: " + senhaCriptografada + "\n");
+    }
 }
 
