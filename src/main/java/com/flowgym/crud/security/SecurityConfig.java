@@ -67,9 +67,8 @@ public class SecurityConfig {
         PasswordEncoder encoder = new BCryptPasswordEncoder();
         String Senha =  JOptionPane.showInputDialog(null, "Digite a senha a ser criptografada do admin");
         String senhaCriptografada = encoder.encode(Senha);
-        JOptionPane.showInputDialog(null, "Tua senha:",senhaCriptografada);
-        // JOptionPane.showMessageDialog(null, "Dê uma olhada na saída do terminal");
-        System.out.println("\nSenha criptograda: " + senhaCriptografada + "\n");
+        JOptionPane.showInputDialog(null, "Senha criptografada:",senhaCriptografada);
+        System.out.println("\nSenha criptografada: " + senhaCriptografada + "\n");
     }
 }
 
