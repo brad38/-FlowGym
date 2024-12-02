@@ -164,7 +164,6 @@ private boolean hasRole(String role, UserDetails principal) {
     return ResponseEntity.status(HttpStatus.OK).body("O prazo de pagamento está em aberto.");
 }
 
-
     //Metodo de cadastro inicial de um aluno
     @PostMapping("/recepcionista/cadastro") //recepcionista 
     public ResponseEntity save(@Valid @RequestBody AlunoDto dto){
@@ -219,7 +218,7 @@ private boolean hasRole(String role, UserDetails principal) {
         aluno.getMatricula()
     );
 
-    // Salva o aluno no banco de dados
+    // Salva o aluno no banco de dados 
     return ResponseEntity.status(HttpStatus.CREATED).body(alunoDto);
 }
     //Metodo responsável por o usuario cadastrar a própria senha
@@ -348,9 +347,8 @@ private boolean hasRole(String role, UserDetails principal) {
 
     aRepository.save(alunoModel); // Salva o aluno com a nova data de vencimento
 
-    return ResponseEntity.status(HttpStatus.OK).body("Timer de vencimento zerado.");
+    return ResponseEntity.status(HttpStatus.OK).body("Pagamento realizado!! Data de vencimento atualizada.");
 }
-
 
     @DeleteMapping("/apagar/{id}") //admin
     public ResponseEntity delete(@PathVariable(value = "id") Integer id){

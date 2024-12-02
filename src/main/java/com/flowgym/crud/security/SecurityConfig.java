@@ -67,7 +67,7 @@ public class SecurityConfig {
     //Contexto estático pra criptografar uma senha
     public static void main(String[] args){
         PasswordEncoder encoder = new BCryptPasswordEncoder();
-        String Senha =  JOptionPane.showInputDialog(null, "Digite a senha a ser criptografada do admin");
+        String Senha = JOptionPane.showInputDialog(null, "Digite a senha a ser criptografada do admin");
         String senhaCriptografada = encoder.encode(Senha);
         JOptionPane.showInputDialog(null, "Senha criptografada:",senhaCriptografada);
         System.out.println("\nSenha criptografada: " + senhaCriptografada + "\n");
