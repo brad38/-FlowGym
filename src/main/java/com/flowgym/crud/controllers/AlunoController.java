@@ -1,6 +1,7 @@
 package com.flowgym.crud.controllers;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -64,7 +65,7 @@ public class AlunoController {
     }
 
     //Esse metodo pega todos os alunos do banco de dados e exibi, mas sem os Id
-    @GetMapping //Recepcionista e instrutor
+    @GetMapping //Recepcionista
     public ResponseEntity getAll(){
         List<AlunoModel> listarAlunos = aRepository.findAll();
         // Cria uma lista de AlunoDto a partir da lista de AlunoModel
@@ -124,7 +125,7 @@ public class AlunoController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não tem permissão para acessar este CPF");
     }
 
-    // Converte para DTO
+    // Converte para uma DTO para exibir somente as informações desejadas
     AlunoDto alunoDto = new AlunoDto(
         alunoModel.getNome(),
         alunoModel.getNascimento(),
@@ -146,7 +147,7 @@ private boolean hasRole(String role, UserDetails principal) {
 }
 
     //Metodo pra verificar se a mensalidade do aluno está vencida
-    @GetMapping("/recepcionista/verificarVencimento/{cpf}") // admin ou recepcionista
+    @GetMapping("/recepcionista/verificarVencimento/{cpf}") // recepcionista
     public ResponseEntity verificarVencimento(@PathVariable(value = "cpf") String cpf) {
     Optional<AlunoModel> aluno = aRepository.findByCpf(cpf);
     if (aluno.isEmpty()) {
@@ -164,7 +165,7 @@ private boolean hasRole(String role, UserDetails principal) {
 }
 
 
-    //Metodo de cadastro inicial de um aluno(função permitida para adm e recepcionistas)
+    //Metodo de cadastro inicial de um aluno
     @PostMapping("/recepcionista/cadastro") //recepcionista 
     public ResponseEntity save(@Valid @RequestBody AlunoDto dto){
     // Verifica se já existe um aluno com esse email cadastrado e se o valor de email é diferente de null
@@ -184,11 +185,13 @@ private boolean hasRole(String role, UserDetails principal) {
 
     // Cria o objeto AlunoModel a partir do DTO
     var aluno = new AlunoModel(); 
-    BeanUtils.copyProperties(dto, aluno); // Copia as propriedades do DTO para o aluno
+    BeanUtils.copyProperties(dto, aluno); // Copia as propriedades do corpo da requisição DTO para uma variável model do aluno
     aluno.setMatricula(gerarMatricula());
 
     // Define a data de vencimento para 30 dias após a criação do aluno
-    aluno.setDataVencimento(LocalDate.now().plusDays(30));
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy"); //Formata da data pra o formato Brasileiro
+    String dataVencimento = LocalDate.now().plusDays(30).format(formatter);
+    aluno.setDataVencimento(LocalDate.parse(dataVencimento, formatter));
 
     // Se o aluno for menor, associa o CPF do responsável
     if (dto.menor() && dto.responsavelCpf() != null && !dto.responsavelCpf().isEmpty()) {
@@ -200,8 +203,24 @@ private boolean hasRole(String role, UserDetails principal) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("CPF do responsável não pode ser nulo ou vazio.");
     }
 
+    //Salva o aluno repositorio
+    aRepository.save(aluno);
+
+    // Converte para DTO para somente retornar como resposta JSON as informações do aluno sem exibir o id da tabela
+    AlunoDto alunoDto = new AlunoDto(
+        aluno.getNome(),
+        aluno.getNascimento(),
+        aluno.getDataVencimento(),
+        aluno.getEmail(),
+        aluno.getTelefone(),
+        aluno.getCpf(),
+        aluno.isMenor(),
+        aluno.getResponsavelCpf(),
+        aluno.getMatricula()
+    );
+
     // Salva o aluno no banco de dados
-    return ResponseEntity.status(HttpStatus.CREATED).body(aRepository.save(aluno));
+    return ResponseEntity.status(HttpStatus.CREATED).body(alunoDto);
 }
     //Metodo responsável por o usuario cadastrar a própria senha
    @PostMapping("/recepcionista/usuariocadastro") //recepcionista e aluno
@@ -264,10 +283,6 @@ private boolean hasRole(String role, UserDetails principal) {
     if(dto.dataVencimento() != null){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Data de vencimento não deve ser alterada");
     }
-    if (dto.nascimento() != null){
-        alunoModel.setNascimento(dto.nascimento());
-    }
- 
     var responsavel = dto.responsavelCpf();
     // Verifica o campo "menor" e define o responsável
     if (!dto.menor() && dto.cpf() != null) {
@@ -295,9 +310,6 @@ private boolean hasRole(String role, UserDetails principal) {
     if (dto.nome() != null) {
         alunoModel.setNome(dto.nome());
     }
-    if (dto.nascimento() != null){
-        alunoModel.setNascimento(dto.nascimento());
-    }
     if (dto.email() != null) {
         alunoModel.setEmail(dto.email());
     }
@@ -322,7 +334,7 @@ private boolean hasRole(String role, UserDetails principal) {
 }
 
     //Metodo referente ao pagamento da mensalidade
-    @PutMapping("/recepcionista/zerarVencimento/{cpf}") // admin ou recepcionista
+    @PutMapping("/recepcionista/zerarVencimento/{cpf}") // recepcionista
     public ResponseEntity zerarVencimento(@PathVariable(value = "cpf") String cpf) {
     Optional<AlunoModel> aluno = aRepository.findByCpf(cpf);
     if (aluno.isEmpty()) {

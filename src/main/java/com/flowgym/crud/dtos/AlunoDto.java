@@ -31,12 +31,12 @@ public record AlunoDto( //Dto é uma classe que a gente instância o que a gente
     @Pattern(regexp = "\\(\\d{2}\\) \\d{5}-\\d{4}", message = "formato inválido de telefone")
     String telefone,
 
-    @Pattern(regexp = "\\d{3}\\.?\\d{3}\\.?\\d{3}-?\\d{2}", message = "CPF inválido")
+    @Pattern(regexp = "\\d{11}", message = "CPF inválido")
     String cpf,
     
     boolean menor, // Flag para indicar se é menor ou não
     
-    @Pattern(regexp = "\\d{3}\\.?\\d{3}\\.?\\d{3}-?\\d{2}", message = "CPF inválido")
+    @Pattern(regexp = "\\d{11}", message = "CPF inválido")
     String responsavelCpf, // CPF do responsável, caso seja menor
 
     String matricula
