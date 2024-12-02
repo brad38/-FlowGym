@@ -25,7 +25,6 @@ public class AlunoModel {
 
     private String nome;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate nascimento;
     private String email;
 
