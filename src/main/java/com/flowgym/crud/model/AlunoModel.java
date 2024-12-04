@@ -2,7 +2,7 @@ package com.flowgym.crud.model;
 
 import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,13 +21,13 @@ public class AlunoModel {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
     private int id;
 
     private String nome;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate nascimento;
-
+    
     private String email;
 
     private String telefone;
@@ -41,5 +41,6 @@ public class AlunoModel {
 
     private String responsavelCpf; // CPF do responsável, sem chave estrangeira
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDate dataVencimento;
 }

@@ -62,8 +62,8 @@ public class RecepcionistaController {
     }
 
     // Método responsável por procurar recepcionista pelo CPF
-@GetMapping("/recepcionista/cpf/{cpf}") // recepcionista e admin
-public ResponseEntity getByCpf(
+    @GetMapping("/recepcionista/cpf/{cpf}") // recepcionista e admin
+    public ResponseEntity getByCpf(
     @PathVariable(value = "cpf") String cpf,
     @AuthenticationPrincipal UserDetails principal) {
 
@@ -182,7 +182,7 @@ private boolean hasRole(String role, UserDetails principal) {
     return ResponseEntity.status(HttpStatus.OK).body(rRepository.save(recepcionistaModel));
 }
     //Metodo responsável por atualizar os dados cadastrais dos recepcionistas pelo cpf
-    @PutMapping("/recepcionista/atualizar/cpf/{cpf}") //recepcionista
+    @PutMapping("/recepcionista/atualizar/cpf/{cpf}") //admin
     public ResponseEntity update(@PathVariable(value = "cpf") String cpf, @RequestBody AlunoDto dto) {
     Optional<RecepcionistaModel> recepcionista = rRepository.findByCpf(cpf);
     if (recepcionista.isEmpty()) {
@@ -225,6 +225,4 @@ private boolean hasRole(String role, UserDetails principal) {
         rRepository.delete(recepcionista.get());
         return ResponseEntity.status(HttpStatus.OK).body("Recepcionista deletado");
     }
-
-
 }

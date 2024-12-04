@@ -116,8 +116,7 @@ private boolean hasRole(String role, UserDetails principal) {
                     .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role));
 }
 
-
-    //Metodo de cadastro inicial de um instrutor(função permitida para adm e recepcionistas)
+    //Metodo de cadastro inicial de um instrutor
     @PostMapping("/recepcionista/cadastro") //recepcionista 
     public ResponseEntity save(@Valid @RequestBody InstrutorDto dto){
     
@@ -135,8 +134,16 @@ private boolean hasRole(String role, UserDetails principal) {
 
     var instrutor = new InstrutorModel(); 
     BeanUtils.copyProperties(dto, instrutor); 
+    iRepository.save(instrutor);
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(iRepository.save(instrutor));
+    InstrutorDto instrutorDto = new InstrutorDto(
+    instrutor.getNome(),
+    instrutor.getEmail(),
+    instrutor.getTelefone(),
+    instrutor.getCpf()
+    );
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(instrutorDto);
 }
 
     //Metodo responsável pelo instrutor criar a senha dele
@@ -229,7 +236,7 @@ private boolean hasRole(String role, UserDetails principal) {
         return ResponseEntity.status(HttpStatus.OK).body("Instrutor deletado");
     }
 
-     //Metodo responsável por deletar instrutor pelo cpf
+    //Metodo responsável por deletar instrutor pelo cpf
     @DeleteMapping("/apagar/cpf/{cpf}") //admin
     public ResponseEntity delete(@PathVariable(value = "cpf") String cpf){
         Optional<InstrutorModel> instrutor = iRepository.findByCpf(cpf);

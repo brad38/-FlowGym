@@ -16,10 +16,10 @@ public record FichaTreinoDto(
     @NotBlank
     String objetivo,
     
-    @JsonFormat(pattern = "dd-MM-yyyy")
+    @JsonFormat(pattern = "dd/MM/yyyy")
     LocalDate dataInicio,
 
-    @JsonFormat(pattern = "dd-MM-yyyy")
+    @JsonFormat(pattern = "dd/MM/yyyy")
     LocalDate dataTermino,
 
     @NotNull

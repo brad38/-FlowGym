@@ -26,20 +26,18 @@ public class SecurityConfig {
                 "/aluno", 
                 "/recepcionista/recepcionista/usuariocadastro", 
                 "/recepcionista/recepcionista/cpf/{cpf}",
-                "/recepcionista/recepcionista/atualizar/cpf/{cpf}",
                 "/instrutor/recepcionista/cpf/{cpf}",
                 "/instrutor/recepcionista/cadastro",
                 "/instrutor/recepcionista/usuariocadastro",
                 "/instrutor/recepcionista/atualizar/cpf/{cpf}",
                 "/aluno/recepcionista/verificarVencimento/{cpf}",
-                "/aluno//recepcionista/zerarVencimento/{cpf}").hasAnyRole("RECEPCIONISTA", "ADMIN")
+                "/aluno/recepcionista/zerarVencimento/{cpf}").hasAnyRole("RECEPCIONISTA", "ADMIN")
                 .requestMatchers(
                 "/fichas/imprimir/{matricula}", 
                 "/aluno/recepcionista/cpf/{cpf}", 
                 "/aluno/recepcionista/usuariocadastro", 
                 "/fichas/aluno/exercicios/{matricula}").hasAnyRole("ALUNO", "ADMIN")
                 .requestMatchers(
-                "/aluno",
                 "/fichas/instrutor/**", 
                 "/instrutor/recepcionista/cpf/{cpf}",
                 "/instrutor/recepcionista/usuariocadastro").hasAnyRole("INSTRUTOR", "ADMIN")
@@ -69,7 +67,7 @@ public class SecurityConfig {
         PasswordEncoder encoder = new BCryptPasswordEncoder();
         String Senha = JOptionPane.showInputDialog(null, "Digite a senha a ser criptografada do admin");
         String senhaCriptografada = encoder.encode(Senha);
-        JOptionPane.showInputDialog(null, "Senha criptografada:",senhaCriptografada);
+        JOptionPane.showInputDialog(null, "Senha criptografada:", senhaCriptografada);
         System.out.println("\nSenha criptografada: " + senhaCriptografada + "\n");
     }
 }

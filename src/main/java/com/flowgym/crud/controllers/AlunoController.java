@@ -1,6 +1,7 @@
 package com.flowgym.crud.controllers;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,7 @@ public class AlunoController {
     }
 
     //Esse metodo pega todos os alunos do banco de dados e exibi, mas sem os Id
-    @GetMapping //Recepcionista
+    @GetMapping //Recepcionista 
     public ResponseEntity getAll(){
         List<AlunoModel> listarAlunos = aRepository.findAll();
         // Cria uma lista de AlunoDto a partir da lista de AlunoModel
@@ -104,7 +105,7 @@ public class AlunoController {
         return ResponseEntity.status(HttpStatus.OK).body(aluno.get()); //"FOUND" é o tipo de status específico pra essa requisição
     }
 
-    //Obtem informações do usuario pelo cpf
+    //Obtem informações do aluno pelo cpf
     @GetMapping("/recepcionista/cpf/{cpf}") // Recepcionista e aluno
     public ResponseEntity getByCpf(@PathVariable(value = "cpf") String cpf, @AuthenticationPrincipal UserDetails principal) {
 
@@ -187,19 +188,25 @@ private boolean hasRole(String role, UserDetails principal) {
     BeanUtils.copyProperties(dto, aluno); // Copia as propriedades do corpo da requisição DTO para uma variável model do aluno
     aluno.setMatricula(gerarMatricula());
 
-    // Define a data de vencimento para 30 dias após a criação do aluno
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy"); //Formata da data pra o formato Brasileiro
-    String dataVencimento = LocalDate.now().plusDays(30).format(formatter);
-    aluno.setDataVencimento(LocalDate.parse(dataVencimento, formatter));
+    //Poem o vencimento pra 30 dias após o cadastro
+    LocalDate dataVencimentoFormatada = LocalDate.now().plusDays(30); //Pega a data atual e acrescenta 30 dias
+    aluno.setDataVencimento(dataVencimentoFormatada);
+
+    LocalDate hoje = LocalDate.now();
+    Period idade = Period.between(aluno.getNascimento(), hoje);
+
+    if (idade.getYears() < 18){
+        aluno.setMenor(true);
+    }
 
     // Se o aluno for menor, associa o CPF do responsável
-    if (dto.menor() && dto.responsavelCpf() != null && !dto.responsavelCpf().isEmpty()) {
-        // Aqui, associamos o CPF do responsável ao campo 'responsavelCpf' no aluno
-        aluno.setResponsavelCpf(dto.responsavelCpf());  // Associando diretamente o CPF
+    if (aluno.isMenor() == true && dto.responsavelCpf() != null && !dto.responsavelCpf().isEmpty()) {
+        // Aqui, associamos o CPF do responsável ao campo "responsavelCpf" no aluno
+        aluno.setResponsavelCpf(dto.responsavelCpf());  // Associando diretamente o CPF do responsável
         aluno.setCpf(null);
-    } else if (dto.menor()) {
+    } else if (aluno.isMenor() == true) {
         // Se for menor e não passar CPF de responsável, retorna erro
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("CPF do responsável não pode ser nulo ou vazio.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Aluno de menor. CPF do responsável não pode ser nulo ou vazio.");
     }
 
     //Salva o aluno repositorio
@@ -221,7 +228,7 @@ private boolean hasRole(String role, UserDetails principal) {
     // Salva o aluno no banco de dados 
     return ResponseEntity.status(HttpStatus.CREATED).body(alunoDto);
 }
-    //Metodo responsável por o usuario cadastrar a própria senha
+    //Metodo responsável por o aluno cadastrar a própria senha
    @PostMapping("/recepcionista/usuariocadastro") //recepcionista e aluno
     public ResponseEntity cadastrarSenha(@RequestBody AlunoLoginDto loginDto) {
     // Verifica se a matrícula existe
@@ -279,6 +286,9 @@ private boolean hasRole(String role, UserDetails principal) {
     if (dto.telefone() != null) {
         alunoModel.setTelefone(dto.telefone());
     }
+    if(dto.nascimento() != null){
+        alunoModel.setNascimento(dto.nascimento());
+    }
     if(dto.dataVencimento() != null){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Data de vencimento não deve ser alterada");
     }
@@ -318,6 +328,9 @@ private boolean hasRole(String role, UserDetails principal) {
     if (dto.telefone() != null) {
         alunoModel.setTelefone(dto.telefone());
     }
+    if(dto.nascimento() != null){
+        alunoModel.setNascimento(dto.nascimento());
+    }
     if(dto.dataVencimento() != null){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Data de vencimento não deve ser alterada");
     }
@@ -342,8 +355,11 @@ private boolean hasRole(String role, UserDetails principal) {
 
     AlunoModel alunoModel = aluno.get();
 
-    // Atualiza a data de vencimento para 30 dias após a data atual
-    alunoModel.setDataVencimento(LocalDate.now().plusDays(30)); //Acresta mais 30 dias
+    DateTimeFormatter brformato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    
+    String DataVencimento = LocalDate.now().plusDays(30).format(brformato);
+
+    alunoModel.setDataVencimento(LocalDate.parse(DataVencimento, brformato)); //Acresta mais 30 dias a partir da data de hoje
 
     aRepository.save(alunoModel); // Salva o aluno com a nova data de vencimento
 
@@ -359,4 +375,6 @@ private boolean hasRole(String role, UserDetails principal) {
         aRepository.delete(aluno.get());
         return ResponseEntity.status(HttpStatus.OK).body("Aluno deletado");
     }
-    }
+}
+
+   

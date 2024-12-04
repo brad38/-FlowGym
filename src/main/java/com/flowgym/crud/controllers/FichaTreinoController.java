@@ -118,7 +118,7 @@ public class FichaTreinoController {
     return false;
 }
 
-    //Metodo responsavel por criar a matricula
+    //Metodo responsavel por criar a ficha de treino
    @PostMapping("/instrutor/criar") //instrutor
     public ResponseEntity<Object> save(@Valid @RequestBody FichaTreinoDto dto) {
     // Verifica se o aluno existe
@@ -237,7 +237,6 @@ private boolean hasRole(String role, UserDetails principal) {
                     .stream()
                     .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role));
 }
-
 
     // Deleta o treino
     @DeleteMapping("/instrutor/{matricula}") // Instrutor

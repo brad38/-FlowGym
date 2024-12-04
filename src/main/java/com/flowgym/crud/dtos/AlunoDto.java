@@ -18,10 +18,10 @@ public record AlunoDto( //Dto é uma classe que a gente instância o que a gente
 
     @NotNull(message = "Data de nascimento não pode ser vazia") 
     @Past(message = "A data de nascimento deve estar no passado")
-    @JsonFormat(pattern = "dd-MM-yyyy")
+    @JsonFormat(pattern = "dd/MM/yyyy")
     LocalDate nascimento,
 
-    @JsonFormat(pattern = "dd-MM-yyyy")
+    @JsonFormat(pattern = "dd/MM/yyyy")
     LocalDate dataVencimento,
 
     @Email(message = "Email inválido")
