@@ -377,4 +377,3 @@ private boolean hasRole(String role, UserDetails principal) {
     }
 }
 
-   

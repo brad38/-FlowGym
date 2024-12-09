@@ -119,12 +119,18 @@ public class FichaTreinoController {
 }
 
     //Metodo responsavel por criar a ficha de treino
-   @PostMapping("/instrutor/criar") //instrutor
+    @PostMapping("/instrutor/criar") //instrutor
     public ResponseEntity<Object> save(@Valid @RequestBody FichaTreinoDto dto) {
     // Verifica se o aluno existe
     Optional<AlunoModel> alunoOptional = aRepository.findByMatricula(dto.matricula());
     if (alunoOptional.isEmpty()) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aluno não encontrado.");
+    }
+
+    // Verifica se o aluno já tem uma ficha de treino
+    Optional<FichaTreinoModel> fichaExistente = fRepository.findByAlunoMatricula(dto.matricula());
+    if (fichaExistente.isPresent()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Aluno já possui uma ficha de treino. Delete-a primeiro");
     }
 
     // Cria a ficha de treino e associa ao aluno
@@ -149,11 +155,31 @@ public class FichaTreinoController {
     }
 
     // Salva a ficha no banco de dados
-    return ResponseEntity.status(HttpStatus.CREATED).body(fRepository.save(ficha));
+    ficha = fRepository.save(ficha);
+
+    // Mapeia os tipos de treino de TipoTreinoModel para TipoTreinoDto sem o ID
+    List<TipoTreinoDto> tiposDto = ficha.getTiposTreino().stream()
+            .map(tipo -> new TipoTreinoDto(tipo.getTipo(), tipo.getExercicios()))
+            .toList();
+
+    // Cria um DTO de FichaTreinoDto para retornar as informações sem o ID
+    FichaTreinoDto fichaDto = new FichaTreinoDto(
+            dto.matricula(),
+            ficha.getObjetivo(),
+            ficha.getDataInicio(),
+            ficha.getDataTermino(),
+            tiposDto, // Passa a lista de tipos já mapeada
+            ficha.getNumeroImpressoes(),
+            ficha.getMaxImpressoes()
+    );
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(fichaDto);
 }
 
+
+
     //Atualiza o treino com base no numero de matricula
-    @PutMapping("/instrutor/atualizar") //instrutor
+    @PutMapping("/instrutor/atualizar/{matricula}") //instrutor
     public ResponseEntity atualizarExercicios(@PathVariable(value = "matricula") String matricula, @RequestBody FichaTreinoDto dto) {
         Optional<FichaTreinoModel> fichaOptional = fRepository.findByAlunoMatricula(matricula);
         if (fichaOptional.isEmpty()) {
@@ -239,15 +265,22 @@ private boolean hasRole(String role, UserDetails principal) {
 }
 
     // Deleta o treino
-    @DeleteMapping("/instrutor/{matricula}") // Instrutor
+   @DeleteMapping("/instrutor/{matricula}")
     public ResponseEntity<Object> delete(@PathVariable String matricula) {
-        Optional<FichaTreinoModel> ficha = fRepository.findByAlunoMatricula(matricula);
-        if (ficha.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha de treino não encontrada.");
-        }
-        fRepository.delete(ficha.get());
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Ficha de treino deletada com sucesso."); // Ajuste para 204 No Content
+    // Busca todas as fichas associadas à matrícula
+    List<FichaTreinoModel> fichas = fRepository.findAllByAlunoMatricula(matricula);
+
+    // Verifica se existem fichas para a matrícula
+    if (fichas.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nenhuma ficha de treino encontrada para a matrícula fornecida.");
     }
+
+    // Exclui todas as fichas encontradas
+    fRepository.deleteAll(fichas);
+
+    return ResponseEntity.status(HttpStatus.OK).body("Todas as fichas de treino associadas foram deletadas com sucesso.");
+}
+
 }
 
 //Outra grupo de classes/tabela "tipo de treino" tem que ser criada, essa tabela vai ter tipo de treinos como: A,B,C,D,E. Cada letra representa o treino do dia do aluno
