@@ -157,12 +157,12 @@ public class FichaTreinoController {
     // Salva a ficha no banco de dados
     ficha = fRepository.save(ficha);
 
-    // Mapeia os tipos de treino de TipoTreinoModel para TipoTreinoDto sem o ID
+    // Mapeia os tipos de treino de TipoTreinoModel para TipoTreinoDto
     List<TipoTreinoDto> tiposDto = ficha.getTiposTreino().stream()
             .map(tipo -> new TipoTreinoDto(tipo.getTipo(), tipo.getExercicios()))
             .toList();
 
-    // Cria um DTO de FichaTreinoDto para retornar as informações sem o ID
+    // Cria um DTO de FichaTreinoDto para retornar as informações do aluno, mas sem exibir informações sensiveis do usuario pro instrutor
     FichaTreinoDto fichaDto = new FichaTreinoDto(
             dto.matricula(),
             ficha.getObjetivo(),
