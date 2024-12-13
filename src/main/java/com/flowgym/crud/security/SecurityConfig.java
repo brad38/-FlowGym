@@ -21,6 +21,8 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth // Isso configura as permissões de acesso para os endpoints.
+            .requestMatchers("aluno/recepcionista/usuariocadastro").permitAll() // Permite acesso público a este endpoint
+            .requestMatchers("/aluno/recepcionista/cpf/{cpf}").hasAnyRole("ALUNO","RECEPCIONISTA","ADMIN")
             .requestMatchers(
                 "/aluno/recepcionista/**",
                 "/aluno", 
@@ -33,10 +35,10 @@ public class SecurityConfig {
                 "/aluno/recepcionista/verificarVencimento/{cpf}",
                 "/aluno/recepcionista/zerarVencimento/{cpf}").hasAnyRole("RECEPCIONISTA", "ADMIN")
                 .requestMatchers(
-                "/fichas/imprimir/{matricula}", 
-                "/aluno/recepcionista/cpf/{cpf}", 
+                "/fichas/imprimir/{matricula}",  
                 "/aluno/recepcionista/usuariocadastro", 
                 "/fichas/aluno/exercicios/{matricula}").hasAnyRole("ALUNO", "ADMIN")
+
                 .requestMatchers(
                 "/fichas/instrutor/**", 
                 "/instrutor/recepcionista/cpf/{cpf}",
