@@ -62,8 +62,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-
-
     @Bean //O "dataSource" é injetado automaticamente e fornece uma conexão com o banco de dados.
     public UserDetailsService userDetailsService(DataSource dataSource) { // Isso carrega as informações de um usuário, como o nome de usuário, senha, roles (permissões) e se o usuário está ativo ou não 
         JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource); // Neste caso, está sendo usado o JdbcUserDetailsManager, que obtém essas informações a partir de um banco de dados
