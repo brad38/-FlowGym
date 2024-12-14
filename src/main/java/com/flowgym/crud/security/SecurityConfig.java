@@ -5,6 +5,7 @@ import javax.swing.JOptionPane;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,6 +13,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class SecurityConfig {
@@ -19,36 +22,47 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth // Isso configura as permissões de acesso para os endpoints.
-            .requestMatchers("aluno/recepcionista/usuariocadastro").permitAll() // Permite acesso público a este endpoint
-            .requestMatchers("/aluno/recepcionista/cpf/{cpf}").hasAnyRole("ALUNO","RECEPCIONISTA","ADMIN")
-            .requestMatchers(
-                "/aluno/recepcionista/**",
-                "/aluno", 
-                "/recepcionista/recepcionista/usuariocadastro", 
-                "/recepcionista/recepcionista/cpf/{cpf}",
-                "/instrutor/recepcionista/cpf/{cpf}",
-                "/instrutor/recepcionista/cadastro",
-                "/instrutor/recepcionista/usuariocadastro",
-                "/instrutor/recepcionista/atualizar/cpf/{cpf}",
-                "/aluno/recepcionista/verificarVencimento/{cpf}",
-                "/aluno/recepcionista/zerarVencimento/{cpf}").hasAnyRole("RECEPCIONISTA", "ADMIN")
-                .requestMatchers(
-                "/fichas/imprimir/{matricula}",  
-                "/aluno/recepcionista/usuariocadastro", 
-                "/fichas/aluno/exercicios/{matricula}").hasAnyRole("ALUNO", "ADMIN")
+            .csrf(csrf -> csrf.disable()) // Desabilita CSRF (necessário para APIs REST)
+            .cors(cors -> cors.configure(http)) // Configuração CORS
+            .authorizeHttpRequests(auth -> auth
 
+                .requestMatchers(HttpMethod.GET, "/aluno/recepcionista/cpf/{cpf}").hasAnyRole("ALUNO", "RECEPCIONISTA", "ADMIN")
+
+                // Permitir acesso público ao endpoint /current-user (para retornar as informações do usuário autenticado)
+                .requestMatchers(HttpMethod.GET, "/api/current-user").authenticated() 
+                
                 .requestMatchers(
-                "/fichas/instrutor/**", 
-                "/instrutor/recepcionista/cpf/{cpf}",
-                "/instrutor/recepcionista/usuariocadastro").hasAnyRole("INSTRUTOR", "ADMIN")
-                .anyRequest().hasRole("ADMIN") // Permite ADMIN acessar todos os endpoint que não estão mapeados a outros papeis
+                    "/aluno/recepcionista/**",
+                    "/aluno", 
+                    "/recepcionista/recepcionista/usuariocadastro", 
+                    "/recepcionista/recepcionista/cpf/{cpf}",
+                    "/instrutor/recepcionista/cpf/{cpf}",
+                    "/instrutor/recepcionista/cadastro",
+                    "/instrutor/recepcionista/usuariocadastro",
+                    "/instrutor/recepcionista/atualizar/cpf/{cpf}",
+                    "/aluno/recepcionista/verificarVencimento/{cpf}",
+                    "/aluno/recepcionista/zerarVencimento/{cpf}")
+                    .hasAnyRole("RECEPCIONISTA", "ADMIN")
+                .requestMatchers(
+                    "/fichas/imprimir/{matricula}",  
+                    "/aluno/recepcionista/usuariocadastro", 
+                    "/fichas/aluno/exercicios/{matricula}")
+                    .hasAnyRole("ALUNO", "ADMIN")
+                .requestMatchers(
+                    "/fichas/instrutor/**", 
+                    "/instrutor/recepcionista/cpf/{cpf}",
+                    "/instrutor/recepcionista/usuariocadastro")
+                    .hasAnyRole("INSTRUTOR", "ADMIN")
+                // Garantir que qualquer outro endpoint seja acessado apenas por usuários com a role ADMIN
+                .anyRequest().hasRole("ADMIN") 
             )
-            .formLogin(form -> form.permitAll()) //Permite que qualquer um acesse a tela de login
-            .httpBasic(Customizer.withDefaults()); //Ativa a autenticação HTTP Basic (nome de usuário e senha no cabeçalho da requisição)
+            .formLogin(form -> form.permitAll()) // Permite que qualquer um acesse a tela de login
+            .httpBasic(Customizer.withDefaults()); // Habilita autenticação HTTP Basic (nome de usuário e senha no cabeçalho da requisição)
+        
         return http.build();
     }
+
+
 
     @Bean //O "dataSource" é injetado automaticamente e fornece uma conexão com o banco de dados.
     public UserDetailsService userDetailsService(DataSource dataSource) { // Isso carrega as informações de um usuário, como o nome de usuário, senha, roles (permissões) e se o usuário está ativo ou não 
@@ -62,6 +76,19 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(); // Esse codificador gera um hash criptografado da senha usando um algoritmo avançado
+    }
+
+    //Bean responsável por permitir requisições de diferentes origens
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://127.0.0.1:5500")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE");
+            }
+        };
     }
 
     //Contexto estático pra criptografar uma senha
