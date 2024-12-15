@@ -148,7 +148,7 @@ private boolean hasRole(String role, UserDetails principal) {
 }
 
     //Metodo pra verificar se a mensalidade do aluno está vencida
-    @GetMapping("/recepcionista/verificarVencimento/{cpf}") // recepcionista
+    @GetMapping("/recepcionista/verificarVencimento/{cpf}") // recepcionista e aluno
     public ResponseEntity verificarVencimento(@PathVariable(value = "cpf") String cpf) {
     Optional<AlunoModel> aluno = aRepository.findByCpf(cpf);
     if (aluno.isEmpty()) {
@@ -159,10 +159,12 @@ private boolean hasRole(String role, UserDetails principal) {
     LocalDate hoje = LocalDate.now(); //Pega a data de hoje
 
     if (dataVencimento.isBefore(hoje)) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("O prazo de pagamento já venceu.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("O prazo de pagamento já venceu."); // Retorna apenas a string
     }
 
-    return ResponseEntity.status(HttpStatus.OK).body("O prazo de pagamento está em aberto.");
+    return ResponseEntity.status(HttpStatus.OK)
+            .body("O prazo de pagamento está em aberto."); // Retorna apenas a string
 }
 
     //Metodo de cadastro inicial de um aluno

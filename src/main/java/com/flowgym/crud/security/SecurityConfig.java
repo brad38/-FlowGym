@@ -27,7 +27,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
 
                 .requestMatchers(HttpMethod.GET, "/aluno/recepcionista/cpf/{cpf}").hasAnyRole("ALUNO", "RECEPCIONISTA", "ADMIN")
-
+                .requestMatchers(HttpMethod.GET, "/aluno/recepcionista/verificarVencimento/{cpf}").hasAnyRole("ALUNO", "RECEPCIONISTA", "ADMIN") 
                 // Permitir acesso público ao endpoint /current-user (para retornar as informações do usuário autenticado)
                 .requestMatchers(HttpMethod.GET, "/api/current-user").authenticated() 
                 
@@ -40,7 +40,6 @@ public class SecurityConfig {
                     "/instrutor/recepcionista/cadastro",
                     "/instrutor/recepcionista/usuariocadastro",
                     "/instrutor/recepcionista/atualizar/cpf/{cpf}",
-                    "/aluno/recepcionista/verificarVencimento/{cpf}",
                     "/aluno/recepcionista/zerarVencimento/{cpf}")
                     .hasAnyRole("RECEPCIONISTA", "ADMIN")
                 .requestMatchers(
@@ -61,6 +60,7 @@ public class SecurityConfig {
         
         return http.build();
     }
+
 
     @Bean //O "dataSource" é injetado automaticamente e fornece uma conexão com o banco de dados.
     public UserDetailsService userDetailsService(DataSource dataSource) { // Isso carrega as informações de um usuário, como o nome de usuário, senha, roles (permissões) e se o usuário está ativo ou não 
