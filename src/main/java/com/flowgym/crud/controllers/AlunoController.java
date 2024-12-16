@@ -106,7 +106,7 @@ public class AlunoController {
     }
 
     //Obtem informações do aluno pelo cpf
-    @GetMapping("/recepcionista/cpf/{cpf}") // Recepcionista e aluno
+    @GetMapping("/aluno/recepcionista/cpf/{cpf}") // Recepcionista e aluno
     public ResponseEntity getByCpf(@PathVariable(value = "cpf") String cpf, @AuthenticationPrincipal UserDetails principal) {
 
     // Verifica se o aluno existe no banco de dados
@@ -268,7 +268,7 @@ private boolean hasRole(String role, UserDetails principal) {
 
     //Metodo responsável por atualizar os dados cadastrais dos alunos pelo id
     @PutMapping("/atualizar/{id}") //admin
-    public ResponseEntity update(@PathVariable(value = "id") Integer id, @RequestBody AlunoDto dto) {
+    public ResponseEntity updateById(@PathVariable(value = "id") Integer id, @RequestBody AlunoDto dto) {
     Optional<AlunoModel> aluno = aRepository.findById(id);
     if (aluno.isEmpty()) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aluno não encontrado");
@@ -312,7 +312,7 @@ private boolean hasRole(String role, UserDetails principal) {
 
     //Metodo responsável por atualizar os dados cadastrais dos alunos cpf
     @PutMapping("/recepcionista/atualizar/cpf/{cpf}") //recepcionista
-    public ResponseEntity update(@PathVariable(value = "cpf") String cpf, @RequestBody AlunoDto dto) {
+    public ResponseEntity updateByCpf(@PathVariable(value = "cpf") String cpf, @RequestBody AlunoDto dto) {
     Optional<AlunoModel> aluno = aRepository.findByCpf(cpf);
     if (aluno.isEmpty()) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aluno não encontrado");
@@ -369,7 +369,7 @@ private boolean hasRole(String role, UserDetails principal) {
 }
 
     @DeleteMapping("/apagar/{id}") //admin
-    public ResponseEntity delete(@PathVariable(value = "id") Integer id){
+    public ResponseEntity deleteById(@PathVariable(value = "id") Integer id){
         Optional<AlunoModel> aluno = aRepository.findById(id);
         if(aluno.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aluno não encontrado"); //Se não existir nenhum aluno com esse id para ser deletado, ele apenas informa sobre.

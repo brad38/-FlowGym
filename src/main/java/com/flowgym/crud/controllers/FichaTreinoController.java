@@ -120,7 +120,7 @@ public class FichaTreinoController {
 
     //Metodo responsavel por criar a ficha de treino
     @PostMapping("/instrutor/criar") //instrutor
-    public ResponseEntity<Object> save(@Valid @RequestBody FichaTreinoDto dto) {
+    public ResponseEntity<Object> saveFicha(@Valid @RequestBody FichaTreinoDto dto) {
         // Verifica se o aluno existe
         Optional<AlunoModel> alunoOptional = aRepository.findByMatricula(dto.matricula());
         if (alunoOptional.isEmpty()) {
@@ -263,7 +263,7 @@ public class FichaTreinoController {
     }
 
     // Deleta o treino
-    @DeleteMapping("/instrutor/{matricula}")
+    @DeleteMapping("/instrutor/{matricula}") // instrutor
     public ResponseEntity<Object> delete(@PathVariable String matricula) {
         // Busca todas as fichas associadas à matrícula
         List<FichaTreinoModel> fichas = fRepository.findAllByAlunoMatricula(matricula);
