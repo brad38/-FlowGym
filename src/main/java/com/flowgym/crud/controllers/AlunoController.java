@@ -49,7 +49,7 @@ public class AlunoController {
     @Autowired
     private UserDetailsService userDetailsService;  // Usado para criar usuário no Spring Security
 
-    //Metodo pra gerar uma matricula
+    // Método pra gerar uma matricula
     private String gerarMatricula(){
         String maiorMatricula = aRepository.findMaxMatricula();
         int novaMatricula;
@@ -65,7 +65,7 @@ public class AlunoController {
     return String.valueOf(novaMatricula);
     }
 
-    //Esse metodo pega todos os alunos do banco de dados e exibi, mas sem os Id
+    // Método que pega todos os alunos do banco de dados e exibe, mas sem os Id
     @GetMapping //Recepcionista 
     public ResponseEntity getAll(){
         List<AlunoModel> listarAlunos = aRepository.findAll();
@@ -88,14 +88,14 @@ public class AlunoController {
         return ResponseEntity.status(HttpStatus.OK).body(listaAlunoDto); // Exemplo de uso da "ResponseEntity", ele retorna um status "200 OK" se tudo ocorrer bem a requisição.
     }
 
-    //Esse metodo pega todos os alunos do banco de dados exibindo junto o id
+    // Método pega todos os alunos do banco de dados exibindo junto o id
     @GetMapping("/admin/ids") //admin
     public ResponseEntity getAllId(){ //"ResponseEntity" é uma classe do SpringFramework que serve pra representar e modificar respostas http. 
         List<AlunoModel> listarAlunos = aRepository.findAll();
         return ResponseEntity.status(HttpStatus.OK).body(listarAlunos); // Exemplo de uso da "ResponseEntity", ele retorna um status "200 OK" se tudo ocorrer bem a requisição.
     }
 
-    //Metodo responsável por procurar aluno pelo Id
+    //Método responsável por procurar aluno pelo Id
     @GetMapping("/admin/ids/{id}") //admin
     public ResponseEntity getById(@PathVariable(value = "id") Integer id) { //É o mesmo metodo GetMapping, tendo a diferença que necessita que um paramétro seja passado na requisição, no caso o "id"
         Optional<AlunoModel> aluno = aRepository.findById(id); //O "Optional" é uma alternativa ao uso de excessões "NullPointers", Sua principal função é representar um valor que pode ou não estar presente. Ou seja, ao inves de exigir um dado ele simplesmente declara ele como "nulo".
@@ -147,7 +147,7 @@ private boolean hasRole(String role, UserDetails principal) {
     return principal.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role));
 }
 
-    //Metodo pra verificar se a mensalidade do aluno está vencida
+    //Método pra verificar se a mensalidade do aluno está vencida
     @GetMapping("/recepcionista/verificarVencimento/{cpf}") // recepcionista e aluno
     public ResponseEntity verificarVencimento(@PathVariable(value = "cpf") String cpf) {
     Optional<AlunoModel> aluno = aRepository.findByCpf(cpf);
