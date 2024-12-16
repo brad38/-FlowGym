@@ -106,7 +106,7 @@ public class AlunoController {
     }
 
     //Obtem informações do aluno pelo cpf
-    @GetMapping("/aluno/recepcionista/cpf/{cpf}") // Recepcionista e aluno
+    @GetMapping("recepcionista/cpf/{cpf}") // Recepcionista e aluno
     public ResponseEntity getByCpf(@PathVariable(value = "cpf") String cpf, @AuthenticationPrincipal UserDetails principal) {
 
     // Verifica se o aluno existe no banco de dados
