@@ -22,45 +22,75 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Desabilita CSRF (necessário para APIs REST)
-            .cors(cors -> cors.configure(http)) // Configuração CORS
-            .authorizeHttpRequests(auth -> auth
-
-                .requestMatchers(HttpMethod.GET, "/aluno/recepcionista/cpf/{cpf}").hasAnyRole("ALUNO", "RECEPCIONISTA", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/aluno/recepcionista/verificarVencimento/{cpf}").hasAnyRole("ALUNO", "RECEPCIONISTA", "ADMIN") 
-                // Permitir acesso público ao endpoint /current-user (para retornar as informações do usuário autenticado)
-                .requestMatchers(HttpMethod.GET, "/api/current-user").authenticated() 
-                
-                .requestMatchers(
-                    "/aluno/recepcionista/**",
-                    "/aluno", 
-                    "/recepcionista/recepcionista/usuariocadastro", 
-                    "/recepcionista/recepcionista/cpf/{cpf}",
-                    "/instrutor/recepcionista/cpf/{cpf}",
-                    "/instrutor/recepcionista/cadastro",
-                    "/instrutor/recepcionista/usuariocadastro",
-                    "/instrutor/recepcionista/atualizar/cpf/{cpf}",
-                    "/aluno/recepcionista/zerarVencimento/{cpf}")
-                    .hasAnyRole("RECEPCIONISTA", "ADMIN")
-                .requestMatchers(
-                    "/fichas/imprimir/{matricula}",  
-                    "/aluno/recepcionista/usuariocadastro", 
-                    "/fichas/aluno/exercicios/{matricula}")
-                    .hasAnyRole("ALUNO", "ADMIN")
-                .requestMatchers(
-                    "/fichas/instrutor/**", 
-                    "/instrutor/recepcionista/cpf/{cpf}",
-                    "/instrutor/recepcionista/usuariocadastro")
-                    .hasAnyRole("INSTRUTOR", "ADMIN")
-                // Garantir que qualquer outro endpoint seja acessado apenas por usuários com a role ADMIN
-                .anyRequest().hasRole("ADMIN") 
-            )
-            .formLogin(form -> form.permitAll()) // Permite que qualquer um acesse a tela de login
-            .httpBasic(Customizer.withDefaults()); // Habilita autenticação HTTP Basic (nome de usuário e senha no cabeçalho da requisição)
+        .csrf(csrf -> csrf.disable()) // Desabilita CSRF (necessário para APIs REST)
+        .cors(cors -> cors.configure(http)) // Configuração CORS
+        .authorizeHttpRequests(auth -> auth
         
+            // Aluno: Endpoints GET
+            .requestMatchers(HttpMethod.GET, "/aluno/recepcionista/cpf/{cpf}").hasAnyRole("ALUNO", "ADMIN", "RECEPCIONISTA")
+            .requestMatchers(HttpMethod.GET, "/fichas/aluno/exercicios/{matricula}").hasAnyRole("ALUNO", "ADMIN", "INSTRUTOR") 
+            .requestMatchers(HttpMethod.GET, "/aluno/recepcionista/verificarVencimento/{cpf}").hasAnyRole("ALUNO", "ADMIN") 
+        
+            // Aluno: Endpoints PUT
+            .requestMatchers(HttpMethod.PUT, "/fichas/imprimir/{matricula}").hasAnyRole("ALUNO", "ADMIN")
+        
+            // Aluno: Endpoints POST
+            .requestMatchers(HttpMethod.POST, "/aluno/recepcionista/usuariocadastro").permitAll()
+        
+            // Recepcionista: Endpoints GET
+            .requestMatchers(HttpMethod.GET, "/aluno").hasAnyRole("RECEPCIONISTA", "ADMIN")
+            .requestMatchers(HttpMethod.GET, "/recepcionista/recepcionista/cpf/{cpf}").hasAnyRole("RECEPCIONISTA", "ADMIN")
+            .requestMatchers(HttpMethod.GET, "/instrutor/recepcionista/cpf/{cpf}").hasAnyRole("RECEPCIONISTA", "ADMIN", "INSTRUTOR")
+        
+            // Recepcionista: Endpoints POST
+            .requestMatchers(HttpMethod.POST, "/aluno/recepcionista/**").hasAnyRole("RECEPCIONISTA", "ADMIN")
+            .requestMatchers(HttpMethod.POST, "/recepcionista/recepcionista/usuariocadastro").permitAll()
+            .requestMatchers(HttpMethod.POST, "/instrutor/recepcionista/cadastro").hasAnyRole("RECEPCIONISTA", "ADMIN")
+            .requestMatchers(HttpMethod.POST, "/instrutor/recepcionista/usuariocadastro").permitAll()
+        
+            // Recepcionista: Endpoints PUT
+            .requestMatchers(HttpMethod.PUT, "/aluno/recepcionista/zerarVencimento/{cpf}").hasAnyRole("RECEPCIONISTA", "ADMIN")
+            .requestMatchers(HttpMethod.PUT, "/instrutor/recepcionista/atualizar/cpf/{cpf}").hasAnyRole("RECEPCIONISTA", "ADMIN")
+        
+            // Instrutor: Endpoints GET
+            .requestMatchers(HttpMethod.GET, "/fichas/instrutor/exercicios/{matricula}").hasAnyRole("INSTRUTOR", "ADMIN")
+        
+            // Instrutor: Endpoints POST
+            .requestMatchers(HttpMethod.POST, "/fichas/instrutor/**").hasAnyRole("INSTRUTOR", "ADMIN")
+        
+            // Instrutor: Endpoints PUT
+            .requestMatchers(HttpMethod.PUT, "/fichas/instrutor/atualizar/{matricula}").hasAnyRole("INSTRUTOR", "ADMIN")
+        
+            // Instrutor: Endpoints DELETE
+            .requestMatchers(HttpMethod.DELETE, "/fichas/instrutor/{matricula}").hasAnyRole("INSTRUTOR", "ADMIN")
+        
+            // Admin: Endpoints GET
+            .requestMatchers(HttpMethod.GET, "/instrutor/admin/ids").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.GET, "/instrutor/admin/ids/{id}").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.GET, "/aluno/admin/ids").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.GET, "/aluno/admin/ids/{id}").hasRole("ADMIN")
+
+            // Admin: Endpoints PUT
+            .requestMatchers(HttpMethod.PUT, "/recepcionista/atualizar/{id}").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.PUT, "/recepcionista/recepcionista/atualizar/cpf/{cpf}").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.PUT, "/instrutor/atualizar/{id}").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.PUT, "/aluno/atualizar/{id}").hasRole("ADMIN")
+
+            // Admin: Endpoints DELETE
+            .requestMatchers(HttpMethod.DELETE, "/recepcionista/apagar/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.DELETE, "/instrutor/apagar/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.DELETE, "/aluno/apagar/{id}").hasRole("ADMIN")
+        
+            // Permitir acesso público ao endpoint /current-user (para retornar as informações do usuário autenticado)
+            .requestMatchers(HttpMethod.GET, "/api/current-user").authenticated() 
+        
+            // Garante que qualquer outro endpoint seja acessado apenas por usuários com a role ADMIN
+            .anyRequest().hasRole("ADMIN") 
+        )
+        .formLogin(form -> form.permitAll()) // Permite que qualquer um acesse a tela de login
+        .httpBasic(Customizer.withDefaults()); // Habilita autenticação HTTP Basic (nome de usuário e senha no cabeçalho da requisição)
         return http.build();
     }
-
 
     @Bean //O "dataSource" é injetado automaticamente e fornece uma conexão com o banco de dados.
     public UserDetailsService userDetailsService(DataSource dataSource) { // Isso carrega as informações de um usuário, como o nome de usuário, senha, roles (permissões) e se o usuário está ativo ou não 

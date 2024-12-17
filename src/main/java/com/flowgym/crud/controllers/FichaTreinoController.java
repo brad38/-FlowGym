@@ -46,8 +46,7 @@ public class FichaTreinoController {
     public ResponseEntity<Object> getByAlunoMatricula(@PathVariable String matricula) {
         Optional<FichaTreinoModel> ficha = fRepository.findByAlunoMatricula(matricula);
         if (ficha.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("{\"error\": \"Ficha de treino não encontrada.\"}"); // Retorna um JSON válido
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha de treino não encontrada."); // Retorna um JSON válido
         }
         FichaTreinoModel fichaModel = ficha.get();
 
