@@ -53,127 +53,127 @@ public class FichaTreinoController {
         // Convertendo a lista de TipoTreinoModel para TipoTreinoDto
         List<TipoTreinoDto> tiposDto = new ArrayList<>();
         for (TipoTreinoModel tipo : fichaModel.getTiposTreino()) {
-        TipoTreinoDto tipoDto = new TipoTreinoDto(
-            tipo.getTipo(), // Tipo do treino (A, B, C, D)
-            tipo.getExercicios() // Lista de exercícios
-        );
-        tiposDto.add(tipoDto);
-    }
+            TipoTreinoDto tipoDto = new TipoTreinoDto(
+                    tipo.getTipo(), // Tipo do treino (A, B, C, D)
+                    tipo.getExercicios() // Lista de exercícios
+            );
+            tiposDto.add(tipoDto);
+        }
 
         FichaTreinoDto fichadto = new FichaTreinoDto(
-        fichaModel.getAluno().getMatricula(), // A matricula do aluno
-        fichaModel.getObjetivo(),
-        fichaModel.getDataInicio(),
-        fichaModel.getDataTermino(),
-        tiposDto, // Passa a lista convertida de TipoTreinoDto
-        fichaModel.getNumeroImpressoes(),
-        fichaModel.getMaxImpressoes() // Passa o valor máximo de impressões
-    );
+                fichaModel.getAluno().getMatricula(), // A matricula do aluno
+                fichaModel.getObjetivo(),
+                fichaModel.getDataInicio(),
+                fichaModel.getDataTermino(),
+                tiposDto, // Passa a lista convertida de TipoTreinoDto
+                fichaModel.getNumeroImpressoes(),
+                fichaModel.getMaxImpressoes() // Passa o valor máximo de impressões
+        );
         return ResponseEntity.status(HttpStatus.OK).body(fichadto);
     }
 
     //Obtém a ficha de treino de um aluno específico pela matrícula
     @GetMapping("/aluno/exercicios/{matricula}") // aluno
     public ResponseEntity<Object> getByMatricula(@PathVariable String matricula, Principal principal) {
-    Optional<FichaTreinoModel> ficha = fRepository.findByAlunoMatricula(matricula);
-    
-    // Obtém o nome de usuário autenticado (username)
-    String username = principal.getName();
-    
-    // Verifica se o username corresponde à matrícula do aluno ou se é um administrador
-    if (!username.equals(matricula) && !hasRole("ADMIN", principal)) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você só pode acessar sua própria ficha de treino ou ser um administrador.");
+        Optional<FichaTreinoModel> ficha = fRepository.findByAlunoMatricula(matricula);
+
+        // Obtém o nome de usuário autenticado (username)
+        String username = principal.getName();
+
+        // Verifica se o username corresponde à matrícula do aluno ou se é um administrador
+        if (!username.equals(matricula) && !hasRole("ADMIN", principal)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você só pode acessar sua própria ficha de treino ou ser um administrador.");
+        }
+
+        if (ficha.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha de treino não encontrada.");
+        }
+
+        FichaTreinoModel fichaModel = ficha.get();
+
+        // Mapeia os tipos de treino de TipoTreinoModel para TipoTreinoDto
+        List<TipoTreinoDto> tiposDto = fichaModel.getTiposTreino().stream()
+                .map(tipo -> new TipoTreinoDto(tipo.getTipo(), tipo.getExercicios()))
+                .toList();
+
+        FichaTreinoDto fichaDto = new FichaTreinoDto(
+                matricula,
+                fichaModel.getObjetivo(),
+                fichaModel.getDataInicio(),
+                fichaModel.getDataTermino(),
+                tiposDto, // Passa a lista de tipos já mapeada
+                fichaModel.getNumeroImpressoes(),
+                fichaModel.getMaxImpressoes()
+        );
+        return ResponseEntity.status(HttpStatus.OK).body(fichaDto);
     }
-    
-    if (ficha.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha de treino não encontrada.");
-    }
-
-    FichaTreinoModel fichaModel = ficha.get();
-
-    // Mapeia os tipos de treino de TipoTreinoModel para TipoTreinoDto
-    List<TipoTreinoDto> tiposDto = fichaModel.getTiposTreino().stream()
-            .map(tipo -> new TipoTreinoDto(tipo.getTipo(), tipo.getExercicios()))
-            .toList();
-
-    FichaTreinoDto fichaDto = new FichaTreinoDto(
-            matricula,
-            fichaModel.getObjetivo(),
-            fichaModel.getDataInicio(),
-            fichaModel.getDataTermino(),
-            tiposDto, // Passa a lista de tipos já mapeada
-            fichaModel.getNumeroImpressoes(),
-            fichaModel.getMaxImpressoes()
-    );
-    return ResponseEntity.status(HttpStatus.OK).body(fichaDto);
-}
 
     // Método auxiliar para verificar se o usuário tem uma role específica
     private boolean hasRole(String role, Principal principal) {
-    if (principal instanceof Authentication authentication) {
-        return authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + role));
+        if (principal instanceof Authentication authentication) {
+            return authentication.getAuthorities().stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_" + role));
+        }
+        return false;
     }
-    return false;
-}
 
     //Metodo responsavel por criar a ficha de treino
     @PostMapping("/instrutor/criar") //instrutor
-    public ResponseEntity<Object> save(@Valid @RequestBody FichaTreinoDto dto) {
-    // Verifica se o aluno existe
-    Optional<AlunoModel> alunoOptional = aRepository.findByMatricula(dto.matricula());
-    if (alunoOptional.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aluno não encontrado.");
-    }
-
-    // Verifica se o aluno já tem uma ficha de treino
-    Optional<FichaTreinoModel> fichaExistente = fRepository.findByAlunoMatricula(dto.matricula());
-    if (fichaExistente.isPresent()) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Aluno já possui uma ficha de treino. Delete-a primeiro");
-    }
-
-    // Cria a ficha de treino e associa ao aluno
-    var ficha = new FichaTreinoModel();
-    BeanUtils.copyProperties(dto, ficha); // Copia os parâmetros do DTO para o modelo
-    ficha.setAluno(alunoOptional.get());
-
-    // Processa os tipos de treino e associa à ficha
-    if (dto.tipos() != null && !dto.tipos().isEmpty()) {
-        List<TipoTreinoModel> tiposTreino = new ArrayList<>();
-        for (TipoTreinoDto tipoDto : dto.tipos()) {
-            if (!"ABCD".contains(tipoDto.tipo())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tipo de treino inválido.");
-            }
-            TipoTreinoModel tipo = new TipoTreinoModel();
-            tipo.setTipo(tipoDto.tipo()); // Tipo "A", "B", "C", "D"
-            tipo.setExercicios(tipoDto.exercicios()); // Exercícios relacionados ao tipo
-            tipo.setFichaTreino(ficha); // Associa o tipo à ficha
-            tiposTreino.add(tipo);
+    public ResponseEntity<Object> saveFicha(@Valid @RequestBody FichaTreinoDto dto) {
+        // Verifica se o aluno existe
+        Optional<AlunoModel> alunoOptional = aRepository.findByMatricula(dto.matricula());
+        if (alunoOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aluno não encontrado.");
         }
-        ficha.setTiposTreino(tiposTreino); // Associa os tipos à ficha
+
+        // Verifica se o aluno já tem uma ficha de treino
+        Optional<FichaTreinoModel> fichaExistente = fRepository.findByAlunoMatricula(dto.matricula());
+        if (fichaExistente.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Aluno já possui uma ficha de treino. Delete-a primeiro");
+        }
+
+        // Cria a ficha de treino e associa ao aluno
+        var ficha = new FichaTreinoModel();
+        BeanUtils.copyProperties(dto, ficha); // Copia os parâmetros do DTO para o modelo
+        ficha.setAluno(alunoOptional.get());
+
+        // Processa os tipos de treino e associa à ficha
+        if (dto.tipos() != null && !dto.tipos().isEmpty()) {
+            List<TipoTreinoModel> tiposTreino = new ArrayList<>();
+            for (TipoTreinoDto tipoDto : dto.tipos()) {
+                if (!"ABCD".contains(tipoDto.tipo())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tipo de treino inválido.");
+                }
+                TipoTreinoModel tipo = new TipoTreinoModel();
+                tipo.setTipo(tipoDto.tipo()); // Tipo "A", "B", "C", "D"
+                tipo.setExercicios(tipoDto.exercicios()); // Exercícios relacionados ao tipo
+                tipo.setFichaTreino(ficha); // Associa o tipo à ficha
+                tiposTreino.add(tipo);
+            }
+            ficha.setTiposTreino(tiposTreino); // Associa os tipos à ficha
+        }
+
+        // Salva a ficha no banco de dados
+        ficha = fRepository.save(ficha);
+
+        // Mapeia os tipos de treino de TipoTreinoModel para TipoTreinoDto
+        List<TipoTreinoDto> tiposDto = ficha.getTiposTreino().stream()
+                .map(tipo -> new TipoTreinoDto(tipo.getTipo(), tipo.getExercicios()))
+                .toList();
+
+        // Cria um DTO de FichaTreinoDto para retornar as informações do aluno, mas sem exibir informações sensiveis do usuario pro instrutor
+        FichaTreinoDto fichaDto = new FichaTreinoDto(
+                dto.matricula(),
+                ficha.getObjetivo(),
+                ficha.getDataInicio(),
+                ficha.getDataTermino(),
+                tiposDto, // Passa a lista de tipos já mapeada
+                ficha.getNumeroImpressoes(),
+                ficha.getMaxImpressoes()
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(fichaDto);
     }
-
-    // Salva a ficha no banco de dados
-    ficha = fRepository.save(ficha);
-
-    // Mapeia os tipos de treino de TipoTreinoModel para TipoTreinoDto
-    List<TipoTreinoDto> tiposDto = ficha.getTiposTreino().stream()
-            .map(tipo -> new TipoTreinoDto(tipo.getTipo(), tipo.getExercicios()))
-            .toList();
-
-    // Cria um DTO de FichaTreinoDto para retornar as informações do aluno, mas sem exibir informações sensiveis do usuario pro instrutor
-    FichaTreinoDto fichaDto = new FichaTreinoDto(
-            dto.matricula(),
-            ficha.getObjetivo(),
-            ficha.getDataInicio(),
-            ficha.getDataTermino(),
-            tiposDto, // Passa a lista de tipos já mapeada
-            ficha.getNumeroImpressoes(),
-            ficha.getMaxImpressoes()
-    );
-
-    return ResponseEntity.status(HttpStatus.CREATED).body(fichaDto);
-}
 
     //Atualiza o treino com base no numero de matricula
     @PutMapping("/instrutor/atualizar/{matricula}") //instrutor
@@ -199,84 +199,84 @@ public class FichaTreinoController {
             ficha.getTiposTreino().addAll(novosTipos);
 
             // Atualiza o número máximo de impressões, se enviado
-    if (dto.maxImpressoes() > 0) { // Apenas atualiza se o valor for positivo
-        ficha.setMaxImpressoes(dto.maxImpressoes());
+            if (dto.maxImpressoes() > 0) { // Apenas atualiza se o valor for positivo
+                ficha.setMaxImpressoes(dto.maxImpressoes());
+            }
+            fRepository.save(ficha);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(fRepository.save(ficha));
     }
-        fRepository.save(ficha);
-    }
-    return ResponseEntity.status(HttpStatus.OK).body(fRepository.save(ficha));
-}
 
     // Método responsável por imprimir o treino
     @PutMapping("/imprimir/{matricula}") // aluno
     public ResponseEntity<Object> imprimirFicha(
-    @PathVariable String matricula,
-    @AuthenticationPrincipal UserDetails principal) {
+            @PathVariable String matricula,
+            @AuthenticationPrincipal UserDetails principal) {
 
-    // Verifica se a ficha de treino existe no banco de dados
-    Optional<FichaTreinoModel> fichaOptional = fRepository.findByAlunoMatricula(matricula);
-    if (fichaOptional.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha de treino não encontrada.");
+        // Verifica se a ficha de treino existe no banco de dados
+        Optional<FichaTreinoModel> fichaOptional = fRepository.findByAlunoMatricula(matricula);
+        if (fichaOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha de treino não encontrada.");
+        }
+
+        FichaTreinoModel ficha = fichaOptional.get();
+
+        // Autenticação e autorização
+        String username = principal.getUsername(); // Usuário logado (pode ser matrícula)
+
+        // Verifica se o usuário é o dono da matrícula ou possui papel de ADMIN
+        if (!username.equals(matricula) && !hasRole("ADMIN", principal)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não tem permissão para imprimir esta ficha de treino.");
+        }
+
+        // Incrementa o contador de impressões
+        ficha.incrementarImpressao();
+
+        // Salva a ficha com o contador de impressões atualizado
+        fRepository.save(ficha);
+
+        // Mapeia os tipos de treino de TipoTreinoModel para TipoTreinoDto
+        List<TipoTreinoDto> tiposDto = ficha.getTiposTreino().stream()
+                .map(tipo -> new TipoTreinoDto(tipo.getTipo(), tipo.getExercicios()))
+                .toList();
+
+        // Cria o DTO de resposta
+        FichaTreinoDto fichaDto = new FichaTreinoDto(
+                matricula,
+                ficha.getObjetivo(),
+                ficha.getDataInicio(),
+                ficha.getDataTermino(),
+                tiposDto, // Passa a lista de tipos já mapeada
+                ficha.getNumeroImpressoes(),
+                ficha.getMaxImpressoes()
+        );
+
+        return ResponseEntity.ok(fichaDto);
     }
 
-    FichaTreinoModel ficha = fichaOptional.get();
-
-    // Autenticação e autorização
-    String username = principal.getUsername(); // Usuário logado (pode ser matrícula)
-    
-    // Verifica se o usuário é o dono da matrícula ou possui papel de ADMIN
-    if (!username.equals(matricula) && !hasRole("ADMIN", principal)) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não tem permissão para imprimir esta ficha de treino.");
+    // Método auxiliar para verificar se o usuário tem o papel especificado
+    private boolean hasRole(String role, UserDetails principal) {
+        return principal.getAuthorities()
+                .stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role));
     }
-
-    // Incrementa o contador de impressões
-    ficha.incrementarImpressao();
-
-    // Salva a ficha com o contador de impressões atualizado
-    fRepository.save(ficha);
-
-    // Mapeia os tipos de treino de TipoTreinoModel para TipoTreinoDto
-    List<TipoTreinoDto> tiposDto = ficha.getTiposTreino().stream()
-            .map(tipo -> new TipoTreinoDto(tipo.getTipo(), tipo.getExercicios()))
-            .toList();
-
-    // Cria o DTO de resposta
-    FichaTreinoDto fichaDto = new FichaTreinoDto(
-            matricula,
-            ficha.getObjetivo(),
-            ficha.getDataInicio(),
-            ficha.getDataTermino(),
-            tiposDto, // Passa a lista de tipos já mapeada
-            ficha.getNumeroImpressoes(),
-            ficha.getMaxImpressoes()
-    );
-
-    return ResponseEntity.ok(fichaDto);
-}
-
-// Método auxiliar para verificar se o usuário tem o papel especificado
-private boolean hasRole(String role, UserDetails principal) {
-    return principal.getAuthorities()
-                    .stream()
-                    .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + role));
-}
 
     // Deleta o treino
-   @DeleteMapping("/instrutor/{matricula}")
+    @DeleteMapping("/instrutor/{matricula}") // instrutor
     public ResponseEntity<Object> delete(@PathVariable String matricula) {
-    // Busca todas as fichas associadas à matrícula
-    List<FichaTreinoModel> fichas = fRepository.findAllByAlunoMatricula(matricula);
+        // Busca todas as fichas associadas à matrícula
+        List<FichaTreinoModel> fichas = fRepository.findAllByAlunoMatricula(matricula);
 
-    // Verifica se existem fichas para a matrícula
-    if (fichas.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nenhuma ficha de treino encontrada para a matrícula fornecida.");
+        // Verifica se existem fichas para a matrícula
+        if (fichas.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nenhuma ficha de treino encontrada para a matrícula fornecida.");
+        }
+
+        // Exclui todas as fichas encontradas
+        fRepository.deleteAll(fichas);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Todas as fichas de treino associadas foram deletadas com sucesso.");
     }
-
-    // Exclui todas as fichas encontradas
-    fRepository.deleteAll(fichas);
-
-    return ResponseEntity.status(HttpStatus.OK).body("Todas as fichas de treino associadas foram deletadas com sucesso.");
-}
 
 }
 

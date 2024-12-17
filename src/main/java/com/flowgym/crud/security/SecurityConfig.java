@@ -89,6 +89,107 @@ public class SecurityConfig {
         )
         .formLogin(form -> form.permitAll()) // Permite que qualquer um acesse a tela de login
         .httpBasic(Customizer.withDefaults()); // Habilita autenticação HTTP Basic (nome de usuário e senha no cabeçalho da requisição)
+                .csrf(csrf -> csrf.disable()) // Desabilita CSRF (necessário para APIs REST)
+                .cors(cors -> cors.configure(http)) // Configuração CORS
+                .authorizeHttpRequests(auth -> auth
+
+                        .requestMatchers(HttpMethod.GET, "/api/current-user").authenticated()
+                        // ALUNO e RECEPCIONISTA GET
+                        .requestMatchers(HttpMethod.GET,
+                                "/aluno/recepcionista/cpf/{cpf}",
+                                "/aluno/recepcionista/verificarVencimento/{cpf}")
+                        .hasAnyRole("ALUNO", "RECEPCIONISTA")
+                        // SOMENTE ALUNO GET
+                        .requestMatchers(HttpMethod.GET,
+                                "/aluno/exercicios/{matricula}") // aluno getByMatricula
+                        .hasAnyRole("ALUNO")
+                        // RECEPCIONISTA E INSTRUTOR GET
+                        .requestMatchers(HttpMethod.GET,
+                                "/instrutor/recepcionista/cpf/{cpf}") // recepcionista e instrutor getByCpf instrutor
+                        .hasAnyRole("RECEPCIONISTA", "INSTRUTOR")
+                        // ADMIN e RECEPCIONISTA endpoints GET
+                        .requestMatchers(HttpMethod.GET,
+                                "/aluno", //admin e recepcionista
+                                "/admin/ids",
+                                "/admin/ids/{id}",
+                                "recepcionista/admin/ids/{id}",
+                                "recepcionista/recepcionista/cpf/{cpf}", // admin e recepcionista
+                                "/instrutor", //Recepcionista e admin
+                                "instrutor/recepcionista/cpf/{cpf}") // recepcionista e admin
+                        .hasAnyRole("ADMIN", "RECEPCIONISTA")
+                        // Somente ADMIN GET
+                        .requestMatchers(HttpMethod.GET,
+                                "/aluno/admin/ids", //admin getAllId(),
+                                "/aluno/admin/ids/{id}", //admin getById(),
+                                "/instrutor/admin/ids", //admin listar os instrutores exibindo junto os ids
+                                "/instrutor/admin/ids/{id}", //admin
+                                "rececpcionista/admin/ids",
+                                "/admin/ids/{id}") //admin
+                        .hasAnyRole("ADMIN")
+                        // SOMENTE INSTRUTOR GET
+                        .requestMatchers(HttpMethod.GET,
+                                "/fichas/instrutor/exercicios/{matricula}") // instrutor getByAlunoMatricula
+                        .hasAnyRole("INSTRUTOR")
+                        // ALUNO e RECEPCIONISTA POST
+                        .requestMatchers(HttpMethod.POST,
+                                "aluno/recepcionista/cadastro", //recepcionista save()
+                                "aluno/recepcionista/usuariocadastro") //recepcionista e aluno cadastrarSenha()
+                        .hasAnyRole("ALUNO", "RECEPCIONISTA")
+                        // SOMENTE RECEPCIONISTA POST
+                        .requestMatchers(HttpMethod.POST,
+                                "/instrutor/recepcionista/cadastro", //recepcionista salva instrutor
+                                "/instrutor/recepcionista/usuariocadastro") //recepcionista e instrutor
+                        .hasAnyRole("RECEPCIONISTA")
+                        // ADMIN E RECEPCIONISTA POST
+                        .requestMatchers(HttpMethod.POST,
+                                "/recepcionista/recepcionista/usuariocadastro") //admin e recepcionist
+                        .hasAnyRole("ADMIN", "RECEPCIONISTA")
+                        //SOMENTE ADMIN POST
+                        .requestMatchers(HttpMethod.POST,
+                                "/recepcionista/recepcionista/cadastro") //admin
+                        .hasAnyRole("ADMIN")
+                        // SOMENTE INSTRUTOR POST
+                        .requestMatchers(HttpMethod.POST,
+                                "/fichas/instrutor/criar") //instrutor saveficha()
+                        .hasAnyRole("INSTRUTOR")
+                        // SOMENTE ALUNO PUT
+                        .requestMatchers(HttpMethod.PUT,
+                                "/aluno/imprimir/{matricula}") // aluno
+                        .hasAnyRole("ALUNO")
+                        // SOMENTE RECEPCIONISTA PUT
+                        .requestMatchers(HttpMethod.PUT,
+                                "/aluno/recepcionista/atualizar/cpf/{cpf}", //recepcionista updateByCpf()
+                                "/aluno/recepcionista/zerarVencimento/{cpf}", // recepcionista zerarVencimento()
+                                "/apagar/{id}", //admin deleteById()
+                                "/instrutor/recepcionista/atualizar/cpf/{cpf}") //recepcionista atualiza instrutor
+                        .hasAnyRole("RECEPCIONISTA")
+                        // SOMENTE ADMIN PUT
+                        .requestMatchers(HttpMethod.PUT,
+                                "/recepcionista/atualizar/{id}", //admin updateById()
+                                "/instrutor/atualizar/{id}", //admin
+                                "/recepcionista/atualizar/{id}", //admin
+                                "/recepcionista/recepcionista/atualizar/cpf/{cpf}", //admin
+                                "/recepcionista/recepcionista/atualizar/cpf/{cpf}") //admin
+                        .hasAnyRole("ADMIN")
+                        // SOMENTE INSTRUTOR PUT
+                        .requestMatchers(HttpMethod.PUT,
+                                "fichas/instrutor/atualizar/{matricula}") //instrutor atualizarExercicios()
+                        .hasAnyRole("INSTRUTOR")
+
+                        // INSTRUTOR e ADMIN DELETE
+                        .requestMatchers(HttpMethod.DELETE, "/fichas/instrutor/{matricula}") // instrutor deletar ficha de treino
+                        .hasAnyRole("ADMIN", "INSTRUTOR")
+                        // SOMENTE ADMIN DELETE
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/aluno/apagar/{id}", //admin
+                                "/instrutor/apagar/{id}", //admin
+                                "instrutor/apagar/cpf/{cpf}", //admin
+                                "/recepcionista/apagar/cpf/{cpf}")
+                        .hasAnyRole("ADMIN")//admin
+
+                )
+                .formLogin(form -> form.permitAll()) // Permite que qualquer um acesse a tela de login
+                .httpBasic(Customizer.withDefaults()); // Habilita autenticação HTTP Basic (nome de usuário e senha no cabeçalho da requisição)
         return http.build();
     }
 
@@ -120,7 +221,7 @@ public class SecurityConfig {
     }
 
     //Contexto estático pra criptografar uma senha
-    public static void main(String[] args){
+    public static void main(String[] args) {
         PasswordEncoder encoder = new BCryptPasswordEncoder();
         String Senha = JOptionPane.showInputDialog(null, "Digite a senha a ser criptografada do admin");
         String senhaCriptografada = encoder.encode(Senha);

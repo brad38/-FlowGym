@@ -183,7 +183,7 @@ private boolean hasRole(String role, UserDetails principal) {
 }
     //Metodo responsável por atualizar os dados cadastrais dos recepcionistas pelo cpf
     @PutMapping("/recepcionista/atualizar/cpf/{cpf}") //admin
-    public ResponseEntity update(@PathVariable(value = "cpf") String cpf, @RequestBody AlunoDto dto) {
+    public ResponseEntity updateByCpf(@PathVariable(value = "cpf") String cpf, @RequestBody AlunoDto dto) {
     Optional<RecepcionistaModel> recepcionista = rRepository.findByCpf(cpf);
     if (recepcionista.isEmpty()) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Recepcionista não encontrado");
@@ -217,7 +217,7 @@ private boolean hasRole(String role, UserDetails principal) {
 
     //Metodo responsável por deletar recepcionista pelo cpf
     @DeleteMapping("/apagar/cpf/{cpf}") //admin
-    public ResponseEntity delete(@PathVariable(value = "cpf") String cpf){
+    public ResponseEntity deleteByCpf(@PathVariable(value = "cpf") String cpf){
         Optional<RecepcionistaModel> recepcionista = rRepository.findByCpf(cpf);
         if(recepcionista.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Recepcionista não encontrado"); 
