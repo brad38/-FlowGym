@@ -11,6 +11,7 @@ public interface AlunoRepository extends JpaRepository<AlunoModel, Integer>{
     Optional<AlunoModel> findByEmail(String email);
     Optional<AlunoModel> findByTelefone(String telefone);  
     Optional<AlunoModel> findByCpf(String cpf);
+    Optional<AlunoModel> findByResponsavelCpf(String Responsavelcpf);
     @Query("SELECT MAX(a.matricula) FROM Aluno a") //Busca a maior matricula no banco de dados
     String findMaxMatricula();
     Optional<AlunoModel> findByMatricula(String matricula);

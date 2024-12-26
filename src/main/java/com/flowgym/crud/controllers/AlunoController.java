@@ -365,6 +365,25 @@ private boolean hasRole(String role, UserDetails principal) {
 
     return ResponseEntity.status(HttpStatus.OK).body("Pagamento realizado!! Data de vencimento atualizada.");
 }
+    @PutMapping("/recepcionista/zerarVencimentoMenor/{ResponsavelCpf}") // recepcionista
+    public ResponseEntity zerarVencimentoMenor(@PathVariable(value = "ResponsavelCpf") String ResponsavelCpf) {
+        Optional<AlunoModel> aluno = aRepository.findByResponsavelCpf(ResponsavelCpf);
+        if (aluno.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Aluno não encontrado");
+        }
+
+        AlunoModel alunoModel = aluno.get();
+
+        DateTimeFormatter brformato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        String DataVencimento = LocalDate.now().plusDays(30).format(brformato);
+
+        alunoModel.setDataVencimento(LocalDate.parse(DataVencimento, brformato)); //Acresta mais 30 dias a partir da data de hoje
+
+        aRepository.save(alunoModel); // Salva o aluno com a nova data de vencimento
+
+        return ResponseEntity.status(HttpStatus.OK).body("Pagamento realizado!! Data de vencimento atualizada.");
+    }
 
     @DeleteMapping("/apagar/{id}") //admin
     public ResponseEntity deleteById(@PathVariable(value = "id") Integer id){

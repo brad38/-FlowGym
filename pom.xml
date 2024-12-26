@@ -113,7 +113,7 @@
     		 <configuration>
        			 <url>jdbc:postgresql://localhost:5432/gym-api</url>
         		 <user>postgres</user>
-        		 <password>1234</password>
+        		 <password>root</password>
         	<schemas>
             <schema>public</schema>
         	</schemas>
