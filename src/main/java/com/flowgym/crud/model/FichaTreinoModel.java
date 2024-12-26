@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "fichatreino")
+@Table(name = "ficha_treino")
 public class FichaTreinoModel {
     
     @Id

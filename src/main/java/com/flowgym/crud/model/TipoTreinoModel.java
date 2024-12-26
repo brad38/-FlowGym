@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "tipotreino")
+@Table(name = "tipo_treino")
 public class TipoTreinoModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
