@@ -49,6 +49,27 @@ Ou abra com sua IDE favorita (IntelliJ, Eclipse, VS Code) e execute a classe App
 Acesse a aplicação:
 URL padrão: http://localhost:8080
 
+## 🖼️ Exemplos da Interface
+
+### Tela de Login
+![Tela do Admin](https://imgur.com/kAeoUkN)
+
+### Tela de Aluno
+![Tela de Dados do Aluno](https://imgur.com/7QWmgyh)
+
+### Tela de Aluno
+![Tela de Treinos do Aluno](https://imgur.com/zo98UcC)
+
+### Tela de Instrutor
+![Tela de Criar Ficha de Treino do Aluno](https://imgur.com/SebBCEy)
+
+### Tela de Instrutor
+![Tela de Dados do Instrutor](https://imgur.com/XKSGm18)
+
+### Tela de Instrutor
+![Tela de Visualização de Treino dos Alunos](https://imgur.com/o5LBtd0)
+
+---
 
 💡 Possíveis melhorias futuras
 Integração com métodos de pagamento
