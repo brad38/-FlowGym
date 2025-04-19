@@ -83,4 +83,4 @@ Este projeto é de uso educacional e está licenciado sob os termos da [Licença
 
 👥 Desenvolvido por
 Este projeto foi desenvolvido em grupo por:
-Cauan Frias, João Ponte, Gabriel Aian, Bradsson Santos
+Cauan Frias, João Pontes, Gabriel Aian, Bradsson Santos
