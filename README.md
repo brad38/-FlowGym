@@ -1,6 +1,6 @@
 # 🏋️ FlowGym
 
-🗃️ Requisitos de Banco de Dados
+🗃️ Requisitos de Banco de Dados:
 Esta é uma aplicação que necessita de acesso a um banco de dados local.
 O projeto não está configurado com Flyway para criação automática de schema, portanto:
 
